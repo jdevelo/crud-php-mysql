@@ -1,7 +1,7 @@
 <?php 
 
 	/**
-	* CRUD - MADEITFORU
+	* CRUD - MYSQL
 	* Developer: JUAN DAVID LEON
 	* Developer WebSite: http://www.jdevweb.com 
 	*/
