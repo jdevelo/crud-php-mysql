@@ -8,46 +8,72 @@
 
 	class CRUD extends Sqlconsult
 	{
-		public static function find($table,$rows='*',$where=null,$params=[],$join=null,$order=null,$limit=null)
-		{
-			$sql = "SELECT $rows FROM $table ";
+		public static function find($table, $args = [])
+		{	
+
+			if (!isset($args['columns'])) {
+				$args['columns'] = '*';
+			}
+
+			$sql = "SELECT $args[columns] FROM $table ";
 
 			// INNER JOIN - LEFT JOIN - RIGHT JOIN - FULL JOIN
-			if ($join != null) {
-				$joinResult = self::join($join);
-				$sql .= $joinResult;
+			if (isset($args['join']) && is_array($args['join'])) {
+				$sql .= self::join($args['join']);
 			}
 
 			// Where conditional
-			$sql .= self::makeWhere($where);
+			$params = [];
+			if ( isset($args['where']) ) {
+				$sql .= " WHERE ".$args['where'];
+				if (!isset($args['where_values'])) {
+					$args['where_values'] = [];
+				}
+				$params = self::configParams( $args['where_values'] );
+			}			
 
 			// Order by conditional
-			if ($order != null) {
-				$sql .= " ORDER BY ".$order;
+			if (isset($args['order'])) {
+				$sql .= " ORDER BY ".$args['order'];
 			}
 			
 			// limit conditional
-			if ($limit != null) {
-				$sql .= " LIMIT ".$limit;
+			if (isset($args['limit'])) {
+				$sql .= " LIMIT ".$args['limit'];
 			}
-
-			// echo $sql;
-			// echo "<br>";
+			// var_dump($sql);
+			// var_dump($params);
 			return parent::consultaBd($sql,$params);
+		}
+
+		public static function all( $table, $args )
+		{	
+			$all = [];
+			$consult = self::find($table,$args);
+			while ($data = $consult[1]->fetch_object()) {
+				array_push($all,$data);
+			}
+			return $all;
+		}
+	
+		public static function count_all( $table, $args = [] )
+		{	
+			$args['columns'] = 'COUNT(*) as total';
+			$consult = self::find($table,$args);	
+			$data = $consult[1]->fetch_object();		
+			return $data->total;
 		}
 		
 		public static function insert($table,$data=[],$unique=null)
 		{	
 			/*
 				$data = [ 'row' => 'dataToInsert'];	
-				$unique = ['conditional' =>, 'params' => []]	
+				$unique = ['where' => '', 'where_values' => [val1, val2, val3 ...]]	
 			*/
 				
 			$sql = "INSERT INTO $table ";
 			$sql .= "(".implode(', ', array_keys($data)).") VALUES ('".implode("', '", $data). "')";
-			// echo $sql;
-			// echo "<br>";
-			// echo "<br>";
+
 			if ($unique != null) {
 				$valUnique = self::unique($table,$unique);
 				if ($valUnique > 0) {
@@ -60,19 +86,28 @@
 			return parent::consultaBd($sql,[]);
 		}
 
-		public static function unique($table,$conditional)
-		{	
-			$where = $conditional['conditional'];
-			$params = $conditional['params'];
-
-			$uniqueData = self::find($table,'*',$where,$params);
-			return $uniqueData[1]->num_rows;			
+		public static function delete($table,$where,$where_values=[])	
+		{
+			$sql = "DELETE FROM $table WHERE $where";
+			$params = self::configParams($where_values);
+			return parent::consultaBd($sql,$params);
 		}
 
-		public static function update($table,$set,$where,$params=[])	
+		/*
+			// falseDelete() used to save one date of delete form an element without delete it necesarilly update tm_delete from null to CURRENT_TIME
+		*/
+		public static function falseDelete($table,$where,$where_values=[])
+		{	
+			$set = ['tm_delete' => date("Y-m-d H:i:s")];
+			return self::update($table,$set,$where,$where_values);
+		}
+
+		public static function update($table,$set,$where,$where_values)	
 		{	
 			/*
 				Set = Data to insert = ['key' => 'value']
+				$where = Conditional,
+				$where_values = Values of the where conditional
 			*/
 			$insert = '';
 			$type = '';
@@ -83,13 +118,15 @@
 				}else{
 					$insert .= ' '.$key.' = ?, ';  
 				}
-				if (Secure::typeChart($value) != false) {
-					$type .= Secure::typeChart($value);					
+				if (self::typeChart($value) != false) {
+					$type .= self::typeChart($value);					
 				}
 			}
 			$data = substr($insert, 0, -2);
 
-			$type .= $params[0]; 
+			foreach ($where_values as $p) {
+				$type .= self::typeChart($p); 
+			}
 
 			if ($type != '') {
 	    		array_push($params2, $type); 
@@ -101,34 +138,59 @@
 				}
 			}
 
-			for ($i=1; $i < count($params); $i++) { 
-				array_push($params2, $params[$i]);
+			foreach ($where_values as $p) {
+				array_push($params2,$p);
 			}
 
 			$sql = "UPDATE $table SET $data WHERE $where";
-			
+
 			return parent::consultaBd($sql,$params2);
 		}
+		
+		public static function unique($table,$conditional)
+		{	
+			$args = array(
+				'where' => $conditional['conditional'],
+				'where_values' => $conditional['where_values'],
+			);
 
-		public static function delete($table,$where,$params=[])	
-		{
-			$sql = "DELETE FROM $table WHERE $where";
-			return parent::consultaBd($sql,$params);
+			$uniqueData = self::find( $table, $args );
+			return $uniqueData[1]->num_rows;			
 		}
 
-		public static function falseDelete($table,$where,$params=[])
-		{	
-			/*
-				// falseDelete() used to save one date of delete form an element without delete it necesarilly update tm_delete from null to CURRENT_TIME
-			*/
-			return self::update($table,['tm_delete' => date("Y-m-d H:i:s")],$where,$params);
-		}
 
-		public static function makeWhere($data = null)
+		static public function configParams($values = [])
 		{	
-			if ($data != null) {
-				return " WHERE ".$data;
+			$type = '';
+			$vals = [];
+			$params = [];
+			foreach ( $values as $vl ) {				
+				if (self::typeChart($vl) != false) {
+					$type .= self::typeChart($vl);					
+				}
+				$vals[] = $vl;
 			}
+
+			if(count($values) > 0){
+				array_push($params,$type);
+			}
+
+			return array_merge($params,$vals);
+		}
+
+		// Characterizes the value as string, Int or NULL
+		static public function typeChart($value)
+		{	
+			if ($value === NULL) {
+				return '';
+			}
+			if (is_numeric($value)) {
+				return 'i';
+			}
+			if (is_string($value)) {
+				return 's';
+			}
+			return false;
 		}
 
 		public static function join($data=[])
@@ -139,22 +201,6 @@
 				$queryJoin .= $query[0].' JOIN '. $query[1].' ON '.$query[2].' ';
 			}
 			return $queryJoin;
-		}
-
-		public static function all($table,$rows='*',$where=null,$params=[],$join=null,$order=null,$limit=null)
-		{	
-			$all = [];
-			$consult = self::find($table,$rows,$where,$params,$join,$order,$limit);
-			while ($data = $consult[1]->fetch_object()) {
-				array_push($all,$data);
-			}
-			return $all;
-		}
-	
-		public static function numRows($table,$rows='*',$where=null,$params=[],$join=null)
-		{	
-			$consult = self::find($table,$rows,$where,$params,$join);			
-			return $consult[1]->num_rows;
 		}
 	}
 
