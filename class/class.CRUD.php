@@ -41,8 +41,7 @@
 			if (isset($args['limit'])) {
 				$sql .= " LIMIT ".$args['limit'];
 			}
-			// var_dump($sql);
-			// var_dump($params);
+
 			return parent::consultaBd($sql,$params);
 		}
 
@@ -82,7 +81,7 @@
 					return parent::consultaBd($sql,[]);					
 				}
 			}
-			// var_dump($sql);
+
 			return parent::consultaBd($sql,[]);
 		}
 
@@ -146,7 +145,7 @@
 
 			return parent::consultaBd($sql,$params2);
 		}
-		
+
 		public static function unique($table,$conditional)
 		{	
 			$args = array(
