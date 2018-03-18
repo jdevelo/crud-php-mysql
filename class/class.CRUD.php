@@ -143,12 +143,12 @@
 
 		public static function all($table,$rows='*',$where=null,$params=[],$join=null,$order=null,$limit=null)
 		{	
-			$nuevo = [];
+			$all = [];
 			$consult = self::find($table,$rows,$where,$params,$join,$order,$limit);
-			while ($data = $consult[1]->fetch_assoc()) {
-				array_push($nuevo,$data);
+			while ($data = $consult[1]->fetch_object()) {
+				array_push($all,$data);
 			}
-			return $nuevo;
+			return $all;
 		}
 	
 		public static function numRows($table,$rows='*',$where=null,$params=[],$join=null)

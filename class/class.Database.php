@@ -6,6 +6,10 @@
 	class Database{
 			
 		private $_connection;
+		private static $_server;
+		private static $_user;
+		private static $_pss;
+		private static $_db;
 
 		//Almacenar una unica instancia
 		private static $_instancia;
@@ -13,10 +17,10 @@
 
 		public static function config_conection_db($server,$user,$pss,$db)			
 		{
-			$this->_server = $server;
-			$this->_user = $user;
-			$this->_pss = $pss;
-			$this->_db = $db;
+			self::$_server = $server;
+			self::$_user = $user;
+			self::$_pss = $pss;
+			self::$_db = $db;
 		}
 
 		// Metodo para obtener instancia de Base de Datos
@@ -29,10 +33,10 @@
 
 		function __construct(){
 			$this->_connection = new mysqli(
-					$this->_server,
-					$this->_user,
-					$this->_pss,
-					$this->_db
+					self::$_server,
+					self::$_user,
+					self::$_pss,
+					self::$_db
 				);
 
 			// manejar error
