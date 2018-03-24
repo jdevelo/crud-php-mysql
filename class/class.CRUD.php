@@ -45,7 +45,7 @@
 			return parent::consultaBd($sql,$params);
 		}
 
-		public static function all( $table, $args )
+		public static function all( $table, $args = [] )
 		{	
 			$all = [];
 			$consult = self::find($table,$args);
@@ -101,7 +101,7 @@
 			return self::update($table,$set,$where,$where_values);
 		}
 
-		public static function update($table,$set,$where,$where_values)	
+		public static function update($table,$set,$where,$where_values = [])	
 		{	
 			/*
 				Set = Data to insert = ['key' => 'value']
