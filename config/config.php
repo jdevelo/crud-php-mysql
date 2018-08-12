@@ -2,18 +2,18 @@
 	
 	/*******************-Conexión a Base de Datos-********************/
 
-	define("nombre_servidor","localhost");
-	define("usuario","root");
-	define("clave","");
-	define("base_datos","demo_crud");
+	define("server","localhost");
+	define("user","root");
+	define("pss","");
+	define("db","demo_crud");
 
 	/*******************-Conexión a Base de Datos-********************/
 
 
 	/*******************-Directorios del proyecto-********************/
 
-	define("URL_BASE", "/CRUD/crud-php-mysql/"); /*Directorio raiz del proyecto*/
-	define('URL_PAGE', '/CRUD/crud-php-mysql/');
+	define("URL_BASE", "/crud-php-mysql/"); /*Directorio raiz del proyecto*/
+	define('URL_PAGE', '/crud-php-mysql/');
 	define("DIRECTORIO_ROOT",$_SERVER["DOCUMENT_ROOT"] . URL_BASE);
 	define('ASSETS', URL_BASE.'assets/');
 

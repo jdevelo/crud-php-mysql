@@ -1,9 +1,11 @@
 <?php 
 
 	/**
+	*
 	* CRUD - MYSQL
 	* Developer: JUAN DAVID LEON
-	* Developer WebSite: http://www.jdevweb.com 
+	* Developer WebSite: http://www.juandleon.com 
+	*
 	*/
 
 	class CRUD extends Sqlconsult
@@ -17,12 +19,12 @@
 
 			$sql = "SELECT $args[columns] FROM $table ";
 
-			// INNER JOIN - LEFT JOIN - RIGHT JOIN - FULL JOIN
+			// INNER JOIN - LEFT JOIN - RIGHT JOIN 
 			if (isset($args['join']) && is_array($args['join'])) {
 				$sql .= self::join($args['join']);
 			}
 
-			// Where conditional
+			// Where 
 			$params = [];
 			if ( isset($args['where']) ) {
 				$sql .= " WHERE ".$args['where'];
@@ -32,12 +34,12 @@
 				$params = self::configParams( $args['where_values'] );
 			}			
 
-			// Order by conditional
+			// Order by 
 			if (isset($args['order'])) {
 				$sql .= " ORDER BY ".$args['order'];
 			}
 			
-			// limit conditional
+			// limit
 			if (isset($args['limit'])) {
 				$sql .= " LIMIT ".$args['limit'];
 			}
