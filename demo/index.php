@@ -12,9 +12,8 @@
 	$opts = 'array con opciones paraconsulta: '
 			array('rows' => , );
 
-
-
 	-------------------------------*/
+	
 	echo "<h2>CRUD::find()</h2>";
 	$args = array(
 			'where' => 'id = ? || id = ?',

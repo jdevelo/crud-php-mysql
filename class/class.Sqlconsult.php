@@ -2,13 +2,13 @@
 
 	/**
 	* Consultas a la Base de Datos
-	* Limpiar datos para solicitudes a la Base de Datos
+	* Escapar datos para solicitudes a la Base de Datos
 	*/
-	class Sqlconsult{	
+	class Sqlconsult extend Database{	
 
 		public static function consultaBd($sql_query,$params){
 			
-			$bd = Database::getInstancia();
+			$bd = parent::getInstancia();
 			$mysqli = $bd->getConnection();
 
 			$consulta = $mysqli -> prepare($sql_query);
@@ -25,11 +25,9 @@
 			$respond = $consulta->get_result();
 
 			if ($consulta->error !== '') {
-				echo "<br>";
-				echo "<br>";
+				echo "<br><br>";
 				echo "Error en consulta sql: <b style='color:red;'>".$consulta->error.'ko</b>';
-				echo "<br>";
-				echo "<br>";
+				echo "<br><br>";
 			}
 
 			return array($consulta,$respond);
@@ -40,7 +38,7 @@
 
 		public static function escape($string){
 			
-			$bd = Database::getInstancia();
+			$bd = parent::getInstancia();
 			$mysqli = $bd->getConnection();
 
 			$string = $mysqli->real_escape_string(strip_tags(trim($string)));
